@@ -40,9 +40,10 @@ public class TSPVisualizer {
 
     public static void main(String[] args) {
         if (args.length < 1) {
-            throw new IllegalArgumentException(
-                    "informe o arquivo de entrada. Ex.: java TSPVisualizer ../dados/entrada_oficial.txt"
-            );
+//            throw new IllegalArgumentException(
+//                    "informe o arquivo de entrada. Ex.: java TSPVisualizer ../dados/entrada_oficial.txt"
+//            );
+            args = new String[]{"D:\\study\\pcv\\dados\\tsp10.txt"};
         }
 
         In in = new In(args[0]);

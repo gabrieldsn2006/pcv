@@ -8,7 +8,7 @@ public class Main {
 //            throw new IllegalArgumentException(
 //                    "informe o arquivo de entrada. Ex.: java Main ../dados/entrada_oficial.txt"
 //            );
-            args = new String[]{"D:\\study\\pcv\\dados\\usa13509.txt"};
+            args = new String[]{"C:\\Users\\vlins\\OneDrive\\Documentos\\GitHub\\pcv\\dados\\usa13509.txt"};
         }
 
         In in = new In(args[0]);

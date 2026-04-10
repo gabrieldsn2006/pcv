@@ -1,0 +1,733 @@
+/* In.java */
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.*;
+import java.util.List;
+
+public class In {
+    private final Scanner scanner;
+
+    public In(String filePath) {
+        try {
+            this.scanner = new Scanner(new File(filePath));
+            this.scanner.useLocale(Locale.US);
+        }
+        catch (FileNotFoundException exception) {
+            throw new IllegalArgumentException("nao foi possivel abrir o arquivo: " + filePath, exception);
+        }
+    }
+
+    public boolean isEmpty() {
+        return !scanner.hasNext();
+    }
+
+    public int readInt() {
+        try {
+            return scanner.nextInt();
+        }
+        catch (NoSuchElementException exception) {
+            throw new IllegalStateException("faltam inteiros no arquivo de entrada", exception);
+        }
+    }
+
+    public double readDouble() {
+        try {
+            return scanner.nextDouble();
+        }
+        catch (NoSuchElementException exception) {
+            throw new IllegalStateException("faltam valores reais no arquivo de entrada", exception);
+        }
+    }
+}
+
+
+
+/* Main.java */
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Main {
+    public static void main(String[] args) {
+
+        if (args.length < 1) {
+//            throw new IllegalArgumentException(
+//                    "informe o arquivo de entrada. Ex.: java Main ../dados/entrada_oficial.txt"
+//            );
+            args = new String[]{"D:\\study\\pcv\\dados\\usa13509.txt"};
+        }
+
+        In in = new In(args[0]);
+        int width = in.readInt();
+        int height = in.readInt();
+
+        List<Point> points = new ArrayList<>();
+        while (!in.isEmpty()) {
+            points.add(new Point(in.readDouble(), in.readDouble()));
+        }
+
+        StdOut.println("Instancia TSP carregada:");
+        StdOut.println("- dimensoes: " + width + " x " + height);
+        StdOut.println("- numero de pontos: " + points.size());
+
+        Tour nearest = new Tour();
+        Tour smallest = new Tour();
+
+        try {
+            for (Point point : points) {
+                nearest.insertNearest(point);
+                smallest.insertSmallest(point);
+            }
+        }
+        catch (UnsupportedOperationException exception) {
+            StdOut.println();
+            StdOut.println("Implementacao pendente em Tour.java:");
+            StdOut.println(exception.getMessage());
+            StdOut.println("Complete insertNearest e insertSmallest e execute novamente.");
+            return;
+        }
+
+        StdOut.println();
+        StdOut.printf("Nearest insertion: tamanho = %d, comprimento = %.4f\n",
+                nearest.size(), nearest.length());
+        StdOut.printf("Smallest insertion: tamanho = %d, comprimento = %.4f\n",
+                smallest.size(), smallest.length());
+
+        TSPVisualizer.showTours(width, height, points, nearest, smallest);
+    }
+}
+
+
+
+/* Point.java */
+
+/* *****************************************************************************
+ *  Classe base local do Trabalho Pratico 4 para modelagem de pontos 2D.
+ *
+ *  Compilation:  javac Point.java
+ *  Execution:    java Point < input.txt
+ *
+ *  Immutable data type for 2D points with floating-point coordinates.
+ *
+ **************************************************************************** */
+
+public class Point {
+    private final double x;   // Cartesian
+    private final double y;   // coordinates
+
+    // creates and initializes a point with given (x, y)
+    public Point(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    // returns the Euclidean distance between the two points
+    public double distanceTo(Point that) {
+        double dx = this.x - that.x;
+        double dy = this.y - that.y;
+        return Math.sqrt(dx*dx + dy*dy);
+    }
+
+    // draws this point to standard drawing
+    public void draw() {
+        StdDraw.point(x, y);
+    }
+
+    // draws the line segment between the two points to standard drawing
+    public void drawTo(Point that) {
+        StdDraw.line(this.x, this.y, that.x, that.y);
+    }
+
+    // returns a string representation of this point
+    public String toString() {
+        return "(" + x + ", " + y + ")";
+    }
+
+}
+
+
+
+/* StdDraw.java */
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
+import java.awt.image.BufferedImage;
+import java.util.ArrayDeque;
+import java.util.Queue;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+
+public final class StdDraw {
+    public static final Color BLACK = Color.BLACK;
+    public static final Color BLUE = Color.BLUE;
+    public static final Color RED = Color.RED;
+
+    private static final int DEFAULT_SIZE = 512;
+
+    private static JFrame frame;
+    private static DrawPanel panel;
+    private static BufferedImage offscreenImage;
+    private static Graphics2D offscreen;
+    private static int canvasWidth = DEFAULT_SIZE;
+    private static int canvasHeight = DEFAULT_SIZE;
+    private static double xmin = 0.0;
+    private static double xmax = DEFAULT_SIZE;
+    private static double ymin = 0.0;
+    private static double ymax = DEFAULT_SIZE;
+    private static double penRadius = 0.002;
+    private static boolean doubleBuffering = false;
+    private static final Queue<Character> keysTyped = new ArrayDeque<>();
+    private static boolean mousePressed = false;
+    private static double mouseX = 0.0;
+    private static double mouseY = 0.0;
+
+    static {
+        initCanvas();
+    }
+
+    private StdDraw() {
+    }
+
+    public static void setCanvasSize(int width, int height) {
+        canvasWidth = width;
+        canvasHeight = height;
+        initCanvas();
+    }
+
+    public static void setXscale(double min, double max) {
+        xmin = min;
+        xmax = max;
+    }
+
+    public static void setYscale(double min, double max) {
+        ymin = min;
+        ymax = max;
+    }
+
+    public static void setPenRadius(double radius) {
+        penRadius = radius;
+    }
+
+    public static void setPenColor(Color color) {
+        offscreen.setColor(color);
+    }
+
+    public static void enableDoubleBuffering() {
+        doubleBuffering = true;
+    }
+
+    public static void clear() {
+        Color old = offscreen.getColor();
+        offscreen.setColor(Color.WHITE);
+        offscreen.fillRect(0, 0, canvasWidth, canvasHeight);
+        offscreen.setColor(old);
+    }
+
+    public static void point(double x, double y) {
+        double xs = scaleX(x);
+        double ys = scaleY(y);
+        double radius = Math.max(2.0, penRadius * Math.max(canvasWidth, canvasHeight));
+        offscreen.fill(new Ellipse2D.Double(xs - radius / 2.0, ys - radius / 2.0, radius, radius));
+        drawIfNeeded();
+    }
+
+    public static void line(double x0, double y0, double x1, double y1) {
+        offscreen.setStroke(new BasicStroke((float) Math.max(1.0, penRadius * Math.max(canvasWidth, canvasHeight))));
+        offscreen.draw(new Line2D.Double(scaleX(x0), scaleY(y0), scaleX(x1), scaleY(y1)));
+        drawIfNeeded();
+    }
+
+    public static void textLeft(double x, double y, String text) {
+        float xs = (float) scaleX(x);
+        float ys = (float) scaleY(y);
+        FontMetrics metrics = offscreen.getFontMetrics();
+        offscreen.drawString(text, xs, ys + metrics.getAscent() / 2.0f);
+        drawIfNeeded();
+    }
+
+    public static void show() {
+        if (panel != null) {
+            panel.repaint();
+        }
+    }
+
+    public static void pause(int millis) {
+        try {
+            Thread.sleep(millis);
+        }
+        catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    public static boolean hasNextKeyTyped() {
+        return !keysTyped.isEmpty();
+    }
+
+    public static char nextKeyTyped() {
+        return keysTyped.remove();
+    }
+
+    public static boolean isMousePressed() {
+        return mousePressed;
+    }
+
+    public static double mouseX() {
+        return mouseX;
+    }
+
+    public static double mouseY() {
+        return mouseY;
+    }
+
+    private static void drawIfNeeded() {
+        if (!doubleBuffering) {
+            show();
+        }
+    }
+
+    private static void initCanvas() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            buildCanvas();
+        }
+        else {
+            try {
+                SwingUtilities.invokeAndWait(StdDraw::buildCanvas);
+            }
+            catch (Exception exception) {
+                throw new IllegalStateException("nao foi possivel inicializar o canvas", exception);
+            }
+        }
+    }
+
+    private static void buildCanvas() {
+        offscreenImage = new BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_INT_ARGB);
+        offscreen = offscreenImage.createGraphics();
+        offscreen.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        offscreen.setColor(Color.WHITE);
+        offscreen.fillRect(0, 0, canvasWidth, canvasHeight);
+        offscreen.setColor(Color.BLACK);
+
+        if (frame == null) {
+            frame = new JFrame("T4 TSP Visualizer");
+            panel = new DrawPanel();
+            panel.setPreferredSize(new Dimension(canvasWidth, canvasHeight));
+            panel.setFocusable(true);
+            panel.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyTyped(KeyEvent event) {
+                    keysTyped.add(event.getKeyChar());
+                }
+            });
+            MouseAdapter mouseAdapter = new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent event) {
+                    mousePressed = true;
+                    updateMouse(event);
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent event) {
+                    mousePressed = false;
+                    updateMouse(event);
+                }
+
+                @Override
+                public void mouseDragged(MouseEvent event) {
+                    updateMouse(event);
+                }
+
+                @Override
+                public void mouseMoved(MouseEvent event) {
+                    updateMouse(event);
+                }
+            };
+            panel.addMouseListener(mouseAdapter);
+            panel.addMouseMotionListener(mouseAdapter);
+            frame.setContentPane(panel);
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            frame.pack();
+            frame.setVisible(true);
+        }
+        else {
+            panel.setPreferredSize(new Dimension(canvasWidth, canvasHeight));
+            frame.pack();
+        }
+
+        panel.requestFocusInWindow();
+        show();
+    }
+
+    private static void updateMouse(MouseEvent event) {
+        mouseX = unscaleX(event.getX());
+        mouseY = unscaleY(event.getY());
+    }
+
+    private static double scaleX(double x) {
+        if (xmax == xmin) {
+            return 0.0;
+        }
+        return canvasWidth * (x - xmin) / (xmax - xmin);
+    }
+
+    private static double scaleY(double y) {
+        if (ymax == ymin) {
+            return 0.0;
+        }
+        return canvasHeight - (canvasHeight * (y - ymin) / (ymax - ymin));
+    }
+
+    private static double unscaleX(double x) {
+        return xmin + x * (xmax - xmin) / canvasWidth;
+    }
+
+    private static double unscaleY(double y) {
+        return ymin + (canvasHeight - y) * (ymax - ymin) / canvasHeight;
+    }
+
+    private static final class DrawPanel extends JPanel {
+        @Override
+        protected void paintComponent(Graphics graphics) {
+            super.paintComponent(graphics);
+            graphics.drawImage(offscreenImage, 0, 0, null);
+        }
+    }
+}
+
+
+
+/* StdIn.java */
+
+import java.util.NoSuchElementException;
+import java.util.Locale;
+import java.util.Scanner;
+
+public final class StdIn {
+    private static final Scanner SCANNER = new Scanner(System.in);
+
+    static {
+        SCANNER.useLocale(Locale.US);
+    }
+
+    private StdIn() {
+    }
+
+    public static boolean isEmpty() {
+        return !SCANNER.hasNext();
+    }
+
+    public static int readInt() {
+        try {
+            return SCANNER.nextInt();
+        }
+        catch (NoSuchElementException exception) {
+            throw new IllegalStateException("faltam inteiros na entrada padrao", exception);
+        }
+    }
+
+    public static double readDouble() {
+        try {
+            return SCANNER.nextDouble();
+        }
+        catch (NoSuchElementException exception) {
+            throw new IllegalStateException("faltam valores reais na entrada padrao", exception);
+        }
+    }
+}
+
+
+
+/* StdOut.java */
+
+public final class StdOut {
+    private StdOut() {
+    }
+
+    public static void println() {
+        System.out.println();
+    }
+
+    public static void println(Object value) {
+        System.out.println(value);
+    }
+
+    public static void printf(String format, Object... args) {
+        System.out.printf(format, args);
+    }
+}
+
+
+
+/* Tour.java */
+
+/* *****************************************************************************
+ * Name: Hasit Nanda
+ * NetID:
+ * Precept:
+ *
+ * Description: This class defines the tour data type by implementing a Circular
+ * Linked List and defining methods to allow for the implementation of two
+ * heuristics to find good solutions to the TSP.
+ **************************************************************************** */
+
+public class Tour {
+    private class Node {
+        private Point p; // point value of node
+        private Node next; // pointer to next Node
+    }
+
+    private Node start; // first Node in Linked List
+
+    // creates an empty tour
+    public Tour() {
+        start = new Node();
+    }
+
+    // creates the 4-point tour a->b->c->d->a (for debugging)
+    public Tour(Point a, Point b, Point c, Point d) {
+        start = new Node();
+        Node b1 = new Node();
+        Node c1 = new Node();
+        Node d1 = new Node();
+        start.p = a;
+        b1.p = b;
+        c1.p = c;
+        d1.p = d;
+        start.next = b1;
+        b1.next = c1;
+        c1.next = d1;
+        d1.next = start;
+    }
+
+    // returns the number of points in this tour
+    public int size() {
+        if (start.p == null) {
+            return 0;
+        }
+        else {
+            int counter = 0;
+            Node current = start;
+            do {
+                current = current.next;
+                counter += 1;
+            } while (!current.equals(start));
+            return counter;
+        }
+    }
+
+    // returns the length of this tour
+    public double length() {
+        if (start.p == null) {
+            return 0.0;
+        }
+        else {
+            double distance = 0.0;
+            Node current = start;
+            do {
+                distance += current.p.distanceTo(current.next.p);
+                current = current.next;
+            } while (!current.equals(start));
+
+            return distance;
+        }
+
+    }
+
+    // returns a string representation of this tour
+    public String toString() {
+        if (start.p == null) {
+            return "";
+        }
+        else {
+            Node current = start;
+            StringBuilder str = new StringBuilder();
+            do {
+                str.append(current.p.toString() + "\n");
+                current = current.next;
+            } while (!current.equals(start));
+            return str.toString();
+        }
+    }
+
+    // draws this tour to standard drawing
+    public void draw() {
+        if (start.p != null && start.next != null) {
+            Node current = start;
+            do {
+                current.p.drawTo(current.next.p);
+                current = current.next;
+            } while (!current.equals(start));
+        }
+    }
+
+    // inserts p using the nearest neighbor heuristic
+    public void insertNearest(Point p) {
+        throw new UnsupportedOperationException(
+                "TODO: implementar insertNearest(Point p) usando a heuristica nearest insertion"
+        );
+    }
+
+    // inserts p using the smallest increase heuristic
+    public void insertSmallest(Point p) {
+        throw new UnsupportedOperationException(
+                "TODO: implementar insertSmallest(Point p) usando a heuristica smallest insertion"
+        );
+    }
+
+    // tests this class by calling all constructors and instance methods
+    public static void main(String[] args) {
+        // define 4 points, corners of a square
+        Point a = new Point(1.0, 1.0);
+        Point b = new Point(1.0, 4.0);
+        Point c = new Point(4.0, 4.0);
+        Point d = new Point(4.0, 1.0);
+
+        // create the tour a -> b -> c -> d -> a
+        Tour squareTour = new Tour(a, b, c, d);
+
+        // print the size to standard output
+        int size = squareTour.size();
+        StdOut.println("# of points = " + size);
+
+        // print the tour length to standard output
+        double length = squareTour.length();
+        StdOut.println("Tour length = " + length);
+
+        // print the tour to standard output
+        StdOut.println(squareTour);
+
+        StdDraw.setXscale(0, 6);
+        StdDraw.setYscale(0, 6);
+
+        Point e = new Point(5.0, 6.0);
+        squareTour.insertNearest(e);
+        squareTour.insertSmallest(e);
+        squareTour.draw();
+
+
+    }
+}
+
+
+
+/* TSPVisualizer.java */
+
+/* *****************************************************************************
+ *  Name:    Jeremie Lumbroso
+ *  NetID:   lumbroso
+ *  Precept: P99
+ *
+ *  Partner Name:    Donna Gabai
+ *  Partner NetID:   dgabai
+ *  Partner Precept: P99
+ *
+ *  Description:  Implements an interactive client that builds a Tour using
+ *                either the nearest heuristic (red) or the smallest heuristic
+ *                (blue).
+ *
+ *                Can be called with or without an input file to begin:
+ *
+ *                  java-introcs TSPVisualizer tsp1000.txt
+ *
+ *                Keyboard commands:
+ *                  - n   toggle nearest heuristic tour
+ *                  - s   toggle smallest heuristic tour
+ *                  - m   toggle mouse up correction (what does this do... ?)
+ *                  - q   quit (no!)
+ *
+ *  Dependencies: Point, StdOut, StdDraw
+ **************************************************************************** */
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class TSPVisualizer {
+    private static final int BORDER = 70;
+
+    public static void showTours(int width, int height, List<Point> points, Tour nearest, Tour smallest) {
+        StdDraw.setCanvasSize(width, height + BORDER);
+        StdDraw.setXscale(0, width);
+        StdDraw.setYscale(-BORDER, height);
+        StdDraw.enableDoubleBuffering();
+        render(points, nearest, smallest);
+    }
+
+    public static void main(String[] args) {
+        if (args.length < 1) {
+//            throw new IllegalArgumentException(
+//                    "informe o arquivo de entrada. Ex.: java TSPVisualizer ../dados/entrada_oficial.txt"
+//            );
+            args = new String[]{"D:\\study\\pcv\\dados\\tsp10.txt"};
+        }
+
+        In in = new In(args[0]);
+        int width = in.readInt();
+        int height = in.readInt();
+        ArrayList<Point> points = new ArrayList<>();
+        Tour nearest = new Tour();
+        Tour smallest = new Tour();
+
+        try {
+            while (!in.isEmpty()) {
+                Point p = new Point(in.readDouble(), in.readDouble());
+                points.add(p);
+                nearest.insertNearest(p);
+                smallest.insertSmallest(p);
+            }
+        }
+        catch (UnsupportedOperationException exception) {
+            StdOut.println("Implementacao pendente em Tour.java:");
+            StdOut.println(exception.getMessage());
+            return;
+        }
+
+        showTours(width, height, points, nearest, smallest);
+    }
+
+    private static void render(List<Point> points, Tour nearest, Tour smallest) {
+        StdDraw.clear();
+        StdDraw.setPenColor(StdDraw.RED);
+        StdDraw.setPenRadius(0.004);
+        nearest.draw();
+
+        StdDraw.setPenColor(StdDraw.BLUE);
+        StdDraw.setPenRadius(0.003);
+        smallest.draw();
+
+        StdDraw.setPenColor(StdDraw.BLACK);
+        StdDraw.setPenRadius(0.005);
+        for (Point p : points) {
+            p.draw();
+        }
+
+        StdDraw.textLeft(10, -10, "num points: " + points.size());
+        StdDraw.setPenColor(StdDraw.RED);
+        StdDraw.textLeft(10, -35, String.format("nearest: %.4f", nearest.length()));
+        StdDraw.setPenColor(StdDraw.BLUE);
+        StdDraw.textLeft(10, -60, String.format("smallest: %.4f", smallest.length()));
+        StdDraw.setPenColor(StdDraw.BLACK);
+        StdDraw.show();
+    }
+}

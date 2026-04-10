@@ -82,6 +82,14 @@ public final class StdDraw {
         offscreen.setColor(Color.WHITE);
         offscreen.fillRect(0, 0, canvasWidth, canvasHeight);
         offscreen.setColor(old);
+//        if (offscreen == null) {
+//            initCanvas();
+//        }
+//
+//        Color old = offscreen.getColor();
+//        offscreen.setColor(Color.WHITE);
+//        offscreen.fillRect(0, 0, canvasWidth, canvasHeight);
+//        offscreen.setColor(old);
     }
 
     public static void point(double x, double y) {
@@ -153,7 +161,8 @@ public final class StdDraw {
         }
         else {
             try {
-                SwingUtilities.invokeAndWait(StdDraw::buildCanvas);
+//                SwingUtilities.invokeAndWait(StdDraw::buildCanvas);
+                SwingUtilities.invokeLater(StdDraw::buildCanvas);
             }
             catch (Exception exception) {
                 throw new IllegalStateException("nao foi possivel inicializar o canvas", exception);

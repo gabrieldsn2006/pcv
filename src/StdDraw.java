@@ -156,18 +156,18 @@ public final class StdDraw {
     }
 
     private static void initCanvas() {
-        if (SwingUtilities.isEventDispatchThread()) {
+//        if (SwingUtilities.isEventDispatchThread()) {
             buildCanvas();
-        }
-        else {
-            try {
-//                SwingUtilities.invokeAndWait(StdDraw::buildCanvas);
-                SwingUtilities.invokeLater(StdDraw::buildCanvas);
-            }
-            catch (Exception exception) {
-                throw new IllegalStateException("nao foi possivel inicializar o canvas", exception);
-            }
-        }
+//        }
+//        else {
+//            try {
+////                SwingUtilities.invokeAndWait(StdDraw::buildCanvas);
+//                SwingUtilities.invokeLater(StdDraw::buildCanvas);
+//            }
+//            catch (Exception exception) {
+//                throw new IllegalStateException("nao foi possivel inicializar o canvas", exception);
+//            }
+//        }
     }
 
     private static void buildCanvas() {

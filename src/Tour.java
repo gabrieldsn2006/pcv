@@ -100,16 +100,71 @@ public class Tour {
 
     // inserts p using the nearest neighbor heuristic
     public void insertNearest(Point p) {
-        throw new UnsupportedOperationException(
-                "TODO: implementar insertNearest(Point p) usando a heuristica nearest insertion"
-        );
+        Node newNode = new Node();
+        newNode.p = p;
+
+        // caso especial: tour vazio
+        if (start.p == null) {
+            start = newNode;
+            newNode.next = newNode;
+            return;
+        }
+
+        // passo 1: encontrar o nó do tour mais próximo de p
+        Node nearest = start;
+        double minDist = p.distanceTo(start.p);
+
+        Node current = start.next;
+        while (!current.equals(start)) {
+            double dist = p.distanceTo(current.p);
+            if (dist < minDist) {
+                minDist = dist;
+                nearest = current;
+            }
+            current = current.next;
+        }
+
+        // passo 2: inserir p logo após o nó mais próximo
+        newNode.next = nearest.next;
+        nearest.next = newNode;
     }
 
     // inserts p using the smallest increase heuristic
     public void insertSmallest(Point p) {
-        throw new UnsupportedOperationException(
-                "TODO: implementar insertSmallest(Point p) usando a heuristica smallest insertion"
-        );
+        Node newNode = new Node();
+        newNode.p = p;
+
+        // caso especial: tour vazio
+        if (start.p == null) {
+            start = newNode;
+            newNode.next = newNode;
+            return;
+        }
+
+        // para cada aresta (current -> current.next), calcular o custo de
+        // inserir p entre eles:
+        //   aumento = dist(current, p) + dist(p, current.next) - dist(current, current.next)
+        // escolher a aresta de menor aumento e inserir p ali
+        Node bestNode = start;
+        double bestIncrease = p.distanceTo(start.p)
+                + p.distanceTo(start.next.p)
+                - start.p.distanceTo(start.next.p);
+
+        Node current = start.next;
+        while (!current.equals(start)) {
+            double increase = p.distanceTo(current.p)
+                    + p.distanceTo(current.next.p)
+                    - current.p.distanceTo(current.next.p);
+            if (increase < bestIncrease) {
+                bestIncrease = increase;
+                bestNode = current;
+            }
+            current = current.next;
+        }
+
+        // inserir p após bestNode
+        newNode.next = bestNode.next;
+        bestNode.next = newNode;
     }
 
     // tests this class by calling all constructors and instance methods

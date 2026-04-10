@@ -148,17 +148,7 @@ public final class StdDraw {
     }
 
     private static void initCanvas() {
-        if (SwingUtilities.isEventDispatchThread()) {
-            buildCanvas();
-        }
-        else {
-            try {
-                SwingUtilities.invokeAndWait(StdDraw::buildCanvas);
-            }
-            catch (Exception exception) {
-                throw new IllegalStateException("nao foi possivel inicializar o canvas", exception);
-            }
-        }
+        buildCanvas();
     }
 
     private static void buildCanvas() {

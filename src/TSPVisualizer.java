@@ -43,7 +43,7 @@ public class TSPVisualizer {
 //            throw new IllegalArgumentException(
 //                    "informe o arquivo de entrada. Ex.: java TSPVisualizer ../dados/entrada_oficial.txt"
 //            );
-            args = new String[]{"D:\\study\\pcv\\dados\\tsp10.txt"};
+            args = new String[]{"C:\\Users\\User\\Documents\\5o Semestre\\Resolução de problemas com grafos\\pcv\\dados\\usa13509.txt"};
         }
 
         In in = new In(args[0]);

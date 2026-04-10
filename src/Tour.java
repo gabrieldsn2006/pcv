@@ -100,16 +100,84 @@ public class Tour {
 
     // inserts p using the nearest neighbor heuristic
     public void insertNearest(Point p) {
-        throw new UnsupportedOperationException(
-                "TODO: implementar insertNearest(Point p) usando a heuristica nearest insertion"
-        );
+        Node newNode = new Node();
+        newNode.p = p;
+
+        // Tour vazio: p e o unico ponto, aponta para si mesmo
+        if (start.p == null) {
+            start = newNode;
+            start.next = start;
+            return;
+        }
+
+        // Tour com um unico ponto: liga os dois entre si
+        if (start.next == null || start.next == start) {
+            newNode.next = start;
+            start.next = newNode;
+            return;
+        }
+
+        // Percorre o tour e encontra o no mais proximo de p
+        Node nearest = start;
+        double minDist = p.distanceTo(start.p);
+
+        Node current = start.next;
+        while (!current.equals(start)) {
+            double dist = p.distanceTo(current.p);
+            if (dist < minDist) {
+                minDist = dist;
+                nearest = current;
+            }
+            current = current.next;
+        }
+
+        // Insere newNode logo apos o no mais proximo
+        newNode.next = nearest.next;
+        nearest.next = newNode;
     }
 
     // inserts p using the smallest increase heuristic
     public void insertSmallest(Point p) {
-        throw new UnsupportedOperationException(
-                "TODO: implementar insertSmallest(Point p) usando a heuristica smallest insertion"
-        );
+        Node newNode = new Node();
+        newNode.p = p;
+
+        // Tour vazio: p e o unico ponto, aponta para si mesmo
+        if (start.p == null) {
+            start = newNode;
+            start.next = start;
+            return;
+        }
+
+        // Tour com um unico ponto: liga os dois entre si
+        if (start.next == null || start.next == start) {
+            newNode.next = start;
+            start.next = newNode;
+            return;
+        }
+
+        // Percorre cada aresta (current -> current.next) e calcula o aumento
+        // de custo ao inserir p entre os dois nos:
+        //   aumento = dist(current, p) + dist(p, current.next) - dist(current, current.next)
+        Node bestNode = start;
+        double bestIncrease = p.distanceTo(start.p)
+                + p.distanceTo(start.next.p)
+                - start.p.distanceTo(start.next.p);
+
+        Node current = start.next;
+        while (!current.equals(start)) {
+            double increase = p.distanceTo(current.p)
+                    + p.distanceTo(current.next.p)
+                    - current.p.distanceTo(current.next.p);
+            if (increase < bestIncrease) {
+                bestIncrease = increase;
+                bestNode = current;
+            }
+            current = current.next;
+        }
+
+        // Insere newNode logo apos o no que minimiza o aumento
+        newNode.next = bestNode.next;
+        bestNode.next = newNode;
     }
 
     // tests this class by calling all constructors and instance methods
@@ -141,7 +209,5 @@ public class Tour {
         squareTour.insertNearest(e);
         squareTour.insertSmallest(e);
         squareTour.draw();
-
-
     }
 }

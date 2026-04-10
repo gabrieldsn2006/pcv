@@ -82,6 +82,14 @@ public final class StdDraw {
         offscreen.setColor(Color.WHITE);
         offscreen.fillRect(0, 0, canvasWidth, canvasHeight);
         offscreen.setColor(old);
+//        if (offscreen == null) {
+//            initCanvas();
+//        }
+//
+//        Color old = offscreen.getColor();
+//        offscreen.setColor(Color.WHITE);
+//        offscreen.fillRect(0, 0, canvasWidth, canvasHeight);
+//        offscreen.setColor(old);
     }
 
     public static void point(double x, double y) {
@@ -148,17 +156,18 @@ public final class StdDraw {
     }
 
     private static void initCanvas() {
-        if (SwingUtilities.isEventDispatchThread()) {
+//        if (SwingUtilities.isEventDispatchThread()) {
             buildCanvas();
-        }
-        else {
-            try {
-                SwingUtilities.invokeAndWait(StdDraw::buildCanvas);
-            }
-            catch (Exception exception) {
-                throw new IllegalStateException("nao foi possivel inicializar o canvas", exception);
-            }
-        }
+//        }
+//        else {
+//            try {
+////                SwingUtilities.invokeAndWait(StdDraw::buildCanvas);
+//                SwingUtilities.invokeLater(StdDraw::buildCanvas);
+//            }
+//            catch (Exception exception) {
+//                throw new IllegalStateException("nao foi possivel inicializar o canvas", exception);
+//            }
+//        }
     }
 
     private static void buildCanvas() {

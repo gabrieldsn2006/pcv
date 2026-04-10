@@ -3,7 +3,7 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-
+        StdDraw.setCanvasSize(1000, 700);
         if (args.length < 1) {
 //            throw new IllegalArgumentException(
 //                    "informe o arquivo de entrada. Ex.: java Main ../dados/entrada_oficial.txt"

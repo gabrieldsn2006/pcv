@@ -51,8 +51,8 @@ Os arquivos de dados seguem o padrão abaixo:
 O vídeo com a explicação técnica e demonstração da execução pode ser acessado no link abaixo:
 * [https://www.youtube.com/]
 
---- 
-
 ## Ferramentas e Bibliotecas
 
 O projeto utiliza as bibliotecas base `algs4-kw` (Java) e classes utilitárias para entrada/saída e desenho gráfico (`StdDraw`, `StdIn`, `StdOut`, `In`). A classe `Point.java` é usada para modelagem de pontos 2D e cálculos de distância euclidiana.
+
+--- 

@@ -1,3 +1,6 @@
+
+---
+
 # Problema do Caixeiro Viajante (PCV) com Heurísticas de Inserção
 
 Este projeto consiste no desenvolvimento do Trabalho Prático 4 sobre o **Traveling Salesman Problem** (TSP), realizado na Universidade de Fortaleza (UNIFOR). O objetivo central é a implementação de heurísticas de inserção para encontrar soluções eficientes para o problema do ciclo de menor distância que visita todos os pontos de um conjunto.
@@ -43,6 +46,12 @@ java TSPVisualizer ../dados/tsp10.txt
 Os arquivos de dados seguem o padrão abaixo:
 1.  A primeira linha contém a **largura** e a **altura** do plano.
 2.  As linhas subsequentes contêm as coordenadas **x** e **y** de cada cidade.
+
+## Vídeo Explicativo
+O vídeo com a explicação técnica e demonstração da execução pode ser acessado no link abaixo:
+* [https://www.youtube.com/]
+
+--- 
 
 ## Ferramentas e Bibliotecas
 

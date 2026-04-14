@@ -3,53 +3,58 @@
 
 # Problema do Caixeiro Viajante (PCV) com Heurísticas de Inserção
 
-Este projeto consiste no desenvolvimento do Trabalho Prático 4 sobre o **Traveling Salesman Problem** (TSP), realizado na Universidade de Fortaleza (UNIFOR). O objetivo central é a implementação de heurísticas de inserção para encontrar soluções eficientes para o problema do ciclo de menor distância que visita todos os pontos de um conjunto.
+Este projeto refere-se ao Trabalho Prático 4 da disciplina de Resolução de Problemas com Grafos da **Universidade de Fortaleza (UNIFOR)**. O objetivo é implementar e comparar heurísticas de construção para o *Traveling Salesman Problem* (TSP).
 
-## Objetivo do Trabalho
+## Descrição das Heurísticas
 
-O foco do projeto é a implementação de dois métodos específicos na classe `Tour.java`:
+Conforme exigido pelo trabalho, foram implementadas as seguintes heurísticas de inserção:
 
-* **`insertNearest(Point p)`**: Insere um ponto no circuito utilizando a heurística do vizinho mais próximo.
-* **`insertSmallest(Point p)`**: Insere um ponto no circuito utilizando a heurística de menor aumento de distância total.
+* **Nearest Insertion**:
+    1.  Identifica a cidade (ponto) fora do circuito que está mais próxima de qualquer cidade já presente no circuito atual.
+    2.  Insere essa nova cidade na posição que resulte no menor aumento possível no comprimento total do percurso.
+    * *Foco*: Proximidade da próxima cidade em relação ao conjunto já visitado.
+
+* **Smallest Insertion**:
+    1.  Analisa todos os pontos ainda não visitados em relação a todas as arestas possíveis do circuito atual.
+    2.  Identifica qual inserção (entre quais duas cidades consecutivas) produz o menor aumento absoluto no comprimento total.
+    * *Foco*: Impacto direto no custo total do percurso a cada passo.
 
 ## Estrutura do Projeto
 
-A organização dos arquivos no diretório `t4-tsp/` é a seguinte:
-
-* **`dados/`**: Contém instâncias de teste como `tsp10.txt` e a instância oficial `usa13509.txt`, além de gabaritos para conferência (`-nearest.txt`, `-smallest.txt`, `-optimal.txt`).
-* **`src/`**: Contém o código-fonte em Java, incluindo as classes de suporte (`Point.java`, `In.java`, `StdDraw.java`, etc.) e as classes principais de execução (`Main.java`, `TSPVisualizer.java`).
+* **`dados/`**: Contém instâncias de teste (`tsp10.txt`) e a instância oficial de execução (`usa13509.txt`).
+* **`src/`**: Códigos-fonte em Java.
+    * `Tour.java`: Onde a lógica das heurísticas foi implementada.
+    * `Point.java`: Representação de cidades como pontos 2D e cálculos de distância.
+    * `Main.java`: Ponto de entrada que carrega os dados e executa as comparações.
+    * `TSPVisualizer.java`: Ferramenta para visualização gráfica dos circuitos gerados.
 
 ## Instruções de Compilação e Execução
 
-Para compilar o projeto, acesse o diretório `src/` e utilize o comando:
+Para compilar o projeto a partir do diretório `src/`:
 
 ```bash
 javac Main.java Point.java Tour.java TSPVisualizer.java In.java StdIn.java StdOut.java StdDraw.java
 ```
 
-### Execução Principal
-Para rodar a execução oficial com a instância dos EUA, utilize:
+### Execução com Instância Oficial
+Para processar as 13.509 cidades dos EUA e visualizar os resultados:
 
 ```bash
 java Main ../dados/usa13509.txt
 ```
 
-### Visualização de Depuração
-Para abrir o visualizador interativo e testar as heurísticas com um conjunto menor de pontos (10 cidades), utilize:
+### Depuração (Instância Menor)
+Para testar a lógica com o conjunto de 10 cidades:
 
 ```bash
-java TSPVisualizer ../dados/tsp10.txt
+java Main ../dados/tsp10.txt
 ```
 
-## Formato de Entrada
-
-Os arquivos de dados seguem o padrão abaixo:
-1.  A primeira linha contém a **largura** e a **altura** do plano.
-2.  As linhas subsequentes contêm as coordenadas **x** e **y** de cada cidade.
-
 ## Vídeo Explicativo
-O vídeo com a explicação técnica e demonstração da execução pode ser acessado no link abaixo:
-* [https://www.youtube.com/]
+
+O vídeo apresentando o problema, a implementação em `Tour.java` e a demonstração da execução pode ser assistido no link abaixo:
+
+* **Link do Vídeo**: [https://www.youtube.com/]
 
 ## Ferramentas e Bibliotecas
 

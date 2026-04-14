@@ -117,7 +117,7 @@ public class Tour {
             return;
         }
 
-        // Percorre o tour e encontra o no mais proximo de p
+        // Percorre o tour e encontra o nó mais proximo de p
         Node nearest = start;
         double minDist = p.distanceTo(start.p);
 

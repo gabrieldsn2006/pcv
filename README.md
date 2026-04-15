@@ -54,7 +54,7 @@ java Main ../dados/tsp10.txt
 
 O vídeo apresentando o problema, a implementação em `Tour.java` e a demonstração da execução pode ser assistido no link abaixo:
 
-* **Link do Vídeo**: [https://www.youtube.com/]
+* **Link do Vídeo**: [https://youtu.be/iz9UY3sexds]
 
 ## Ferramentas e Bibliotecas
 
